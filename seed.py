@@ -2,9 +2,9 @@ import sys
 import uuid
 from sqlalchemy import text
 from sqlalchemy.orm import Session
-from app.database import SessionLocal, engine, Base
+from app.database import SessionLocal, engine, Base 
 
-# Direct explicit imports pointing to your models package folders
+
 from app.models.medication import Medication
 from app.models.reminder import Reminder
 from app.models.adherence import AdherenceLog
@@ -12,10 +12,13 @@ from app.models.adherence import AdherenceLog
 def seed_database():
     print("🚀 Initializing mock healthcare database seed process...")
     
-    # Force compile metadata paths
+    
     _ = Medication
     _ = Reminder
     _ = AdherenceLog
+    
+  
+    Base.metadata.create_all(bind=engine)
     
     db: Session = SessionLocal()
     
@@ -25,17 +28,14 @@ def seed_database():
         db.query(Reminder).delete()
         db.query(Medication).delete()
         
-        # Clean profiles table cleanly using raw SQL
+       
         db.execute(text("DELETE FROM profiles;"))
         db.commit()
 
-        # 1. GENERATE THE UUID FIRST (Fixes the UnboundLocalError!)
+       
         mock_user_uuid = uuid.uuid4()
         print(f"👤 Injecting parent user profile to satisfy foreign keys: {mock_user_uuid}")
         
-        # 2. Insert into profiles using ONLY the ID column
-                # 2. Insert into profiles using both the ID and a mock full name to pass your DB validation
-               # 2. Insert into profiles using ID, full name, and email to satisfy all database rules
         db.execute(
             text("INSERT INTO profiles (id, full_name, email) VALUES (:user_id, :name, :email);"),
             {
@@ -45,9 +45,6 @@ def seed_database():
             }
         )
         db.commit()
-
-
-      
 
         print("💊 Injecting sample medication tracking data...")
         amoxicillin = Medication(
@@ -84,7 +81,7 @@ def seed_database():
         print("📊 Generating historical compliance logs...")
         log_1 = AdherenceLog(reminder_id=reminder_1.id, status="taken")
         log_2 = AdherenceLog(reminder_id=reminder_3.id, status="taken")
-        log_3 = AdherenceLog(reminder_id=reminder_4.id, status="taken") # Changed to taken to clear constraint
+        log_3 = AdherenceLog(reminder_id=reminder_4.id, status="taken")
 
         db.add_all([log_1, log_2, log_3])
         db.commit()
