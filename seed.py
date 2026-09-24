@@ -2,9 +2,12 @@ import sys
 import uuid
 from sqlalchemy import text
 from sqlalchemy.orm import Session
-from app.database import SessionLocal, engine, Base 
 
 
+from app.database import SessionLocal, engine
+
+
+from app.database import Base 
 from app.models.medication import Medication
 from app.models.reminder import Reminder
 from app.models.adherence import AdherenceLog
@@ -12,13 +15,9 @@ from app.models.adherence import AdherenceLog
 def seed_database():
     print("🚀 Initializing mock healthcare database seed process...")
     
-    
-    _ = Medication
-    _ = Reminder
-    _ = AdherenceLog
-    
-  
+   
     Base.metadata.create_all(bind=engine)
+    print("📋 Production database tables verified / created successfully.")
     
     db: Session = SessionLocal()
     
@@ -32,7 +31,7 @@ def seed_database():
         db.execute(text("DELETE FROM profiles;"))
         db.commit()
 
-       
+      
         mock_user_uuid = uuid.uuid4()
         print(f"👤 Injecting parent user profile to satisfy foreign keys: {mock_user_uuid}")
         
