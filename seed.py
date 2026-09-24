@@ -2,12 +2,9 @@ import sys
 import uuid
 from sqlalchemy import text
 from sqlalchemy.orm import Session
+from app.database import SessionLocal, engine, Base 
 
-
-from app.database import SessionLocal, engine
-
-
-from app.database import Base 
+# Explicit imports pointing to your database schema models
 from app.models.medication import Medication
 from app.models.reminder import Reminder
 from app.models.adherence import AdherenceLog
@@ -15,11 +12,43 @@ from app.models.adherence import AdherenceLog
 def seed_database():
     print("🚀 Initializing mock healthcare database seed process...")
     
-   
-    Base.metadata.create_all(bind=engine)
-    print("📋 Production database tables verified / created successfully.")
-    
     db: Session = SessionLocal()
+    
+    # Force direct table generation using explicit raw SQL DDL schemas
+    try:
+        print("🛠️ Ensuring all core database tables exist in production...")
+        db.execute(text("""
+            CREATE TABLE IF NOT EXISTS profiles (
+                id UUID PRIMARY KEY,
+                full_name VARCHAR(255),
+                email VARCHAR(255)
+            );
+            CREATE TABLE IF NOT EXISTS medications (
+                id SERIAL PRIMARY KEY,
+                name VARCHAR(255) NOT NULL,
+                dosage VARCHAR(255),
+                stock_quantity INTEGER,
+                user_id UUID REFERENCES profiles(id) ON DELETE CASCADE
+            );
+            CREATE TABLE IF NOT EXISTS reminders (
+                id SERIAL PRIMARY KEY,
+                medication_id INTEGER REFERENCES medications(id) ON DELETE CASCADE,
+                reminder_time VARCHAR(5) NOT NULL,
+                is_active BOOLEAN DEFAULT TRUE
+            );
+            CREATE TABLE IF NOT EXISTS adherence_logs (
+                id SERIAL PRIMARY KEY,
+                reminder_id INTEGER REFERENCES reminders(id) ON DELETE CASCADE,
+                timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                status VARCHAR(50) NOT NULL
+            );
+        """))
+        db.commit()
+        print("📋 Production database structural schema is verified and ready.")
+    except Exception as ddl_error:
+        db.rollback()
+        print(f"❌ DDL Failure when verifying table structures: {ddl_error}")
+        sys.exit(1)
     
     try:
         print("🧹 Cleaning existing data records...")
@@ -27,11 +56,11 @@ def seed_database():
         db.query(Reminder).delete()
         db.query(Medication).delete()
         
-       
+        # Clean profiles relational table using standard SQL execution
         db.execute(text("DELETE FROM profiles;"))
         db.commit()
 
-      
+        # Generate fresh user identity footprint
         mock_user_uuid = uuid.uuid4()
         print(f"👤 Injecting parent user profile to satisfy foreign keys: {mock_user_uuid}")
         
