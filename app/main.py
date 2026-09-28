@@ -8,12 +8,11 @@ app = FastAPI()
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
 
 TWILIO_ACCOUNT_SID = "ACxxxxxxxxxxxxxxxxxxxxxxxx"
 TWILIO_AUTH_TOKEN = "your_auth_token_here"
@@ -30,7 +29,6 @@ class MedicineCreate(BaseModel):
 
 @app.post("/api/medicines")
 async def add_and_check_medicine(med: MedicineCreate):
-  
     fda_url = f"https://fda.gov:{med.name}&limit=1"
     
     warnings_found = ""
@@ -47,11 +45,10 @@ async def add_and_check_medicine(med: MedicineCreate):
         except Exception as e:
             print(f"openFDA connection offline: {e}")
 
-   
     detected_conflicts = [existing_med for existing_med in active_database_medicines if existing_med.lower() in warnings_found.lower()]
 
     if detected_conflicts:
-        conflict_msg = f"⚠️ Alert: {med.name} may interact with your active prescription: {', '.join(detected_conflicts)}."
+        conflict_msg = f"Alert: {med.name} may interact with your active prescription: {', '.join(detected_conflicts)}."
          
         try:
             twilio_client = Client(TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN)
