@@ -21,6 +21,10 @@ This project intentionally rejects basic flat code structures in favor of an ent
 *   **Database ORM:** SQLAlchemy 2.0 with custom Connection Pooling (`pool_size=10`, `max_overflow=20`)
 *   **Data Integrity:** Fully enforced PostgreSQL constraints (Foreign keys, UUID primary keys, and strict enum check-constraints)
 *   **Automated Seed Pipeline:** Standalone data simulation tracker scripts to rapidly populate local instances with valid historical data profiles.
+-  **Drug-Drug Interaction Checks:** Cross-references entries against the live OpenFDA database.
+-  **Automated SMS Safety Alerts:** Integrates the **Twilio API** to immediately text users if a medication conflict is caught during logging.
+-  **Secure Architecture:** Built using clean separation of concerns and robust environment isolation (`.env`).
+
 
 ---
 
