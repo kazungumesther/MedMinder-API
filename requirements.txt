@@ -6,3 +6,5 @@ pydantic-settings
 httpx
 twilio
 email-validator
+psycopg[binary]
+
