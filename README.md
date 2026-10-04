@@ -1,4 +1,4 @@
-# 💊 Med-Minder API
+#  Med-Minder API
 
 A production-ready, clean-architecture backend engine for a medicine reminder and adherence tracking application. Built using **FastAPI**, **SQLAlchemy ORM (v2.0)**, and **PostgreSQL**.
 
